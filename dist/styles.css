@@ -88,10 +88,16 @@ h1 {
 }
 
 .task-form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
+  margin-top: clamp(36px, 5.2vw, 80px);
+}
+
+.task-compose-line {
   display: flex;
   align-items: stretch;
   gap: clamp(12px, 2.1vw, 32px);
-  margin-top: clamp(36px, 5.2vw, 80px);
   font-size: clamp(19px, 2.4vw, 36px);
   line-height: 1.2;
 }
@@ -119,7 +125,9 @@ h1 {
   border-bottom-color: var(--ink);
 }
 
-#task-input:focus-visible {
+#task-input:focus-visible,
+.date-input:focus-visible,
+.editor-title:focus-visible {
   outline: 2px solid var(--olive);
   outline-offset: 3px;
 }
@@ -130,24 +138,70 @@ h1 {
   min-height: clamp(46px, 4.55vw, 70px);
   padding: 0 clamp(14px, 1.6vw, 25px);
   border: 0;
-  background: var(--ink);
-  color: var(--paper);
   font-size: 0.9em;
   font-weight: 800;
   letter-spacing: -0.035em;
-  transition: background-color 160ms ease-out, transform 160ms var(--ease-out);
+}
+
+.add-button,
+.editor-save {
+  background: var(--ink);
+  color: var(--paper);
+  transition: background-color 180ms ease-out, transform 180ms var(--ease-out);
 }
 
 .add-button:focus-visible,
-.delete-button:focus-visible,
+.editor-save:focus-visible,
+.editor-cancel:focus-visible,
+.text-button:focus-visible,
+.icon-button:focus-visible,
 .task-view-controls select:focus-visible,
 .task-checkbox:focus-visible + .task-check {
   outline: 2px solid var(--olive);
   outline-offset: 4px;
 }
 
-.add-button:active {
+.add-button:active,
+.editor-save:active {
   transform: translateY(1px);
+}
+
+.task-date-entry {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 12px;
+  font-size: clamp(14px, 1.15vw, 17px);
+  font-weight: 600;
+}
+
+.task-date-entry label span {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.date-input {
+  width: 9.7em;
+  max-width: 100%;
+  min-height: 44px;
+  padding: 2px 3px;
+  border: 0;
+  border-bottom: 1px solid var(--field-line);
+  border-radius: 0;
+  background: transparent;
+  color: var(--ink);
+}
+
+.text-button {
+  min-height: 44px;
+  padding: 0 5px;
+  border: 0;
+  background: transparent;
+  color: var(--olive);
+  font-weight: 800;
+  text-decoration: underline transparent;
+  text-underline-offset: 0.22em;
+  transition: text-decoration-color 160ms ease-out;
 }
 
 .task-toolbar {
@@ -156,7 +210,7 @@ h1 {
   align-items: center;
   justify-content: space-between;
   gap: 4px 20px;
-  margin: clamp(20px, 2.35vw, 36px) 0 0;
+  margin: clamp(12px, 1.45vw, 22px) 0 0;
   padding-bottom: 6px;
   border-bottom: 1px solid var(--line);
   font-size: clamp(14px, 1.25vw, 19px);
@@ -198,13 +252,16 @@ h1 {
 }
 
 .task-row {
-  --control-size: clamp(44px, 3.8vw, 58px);
-  --icon-size: clamp(24px, 2.72vw, 42px);
+  --check-target: clamp(44px, 3.8vw, 58px);
+  --check-size: clamp(24px, 2.72vw, 42px);
+}
+
+.task-row-body {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) var(--control-size);
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  gap: clamp(10px, 1.2vw, 18px);
-  min-height: clamp(68px, 8.4vw, 129px);
+  gap: clamp(6px, 0.9vw, 14px);
+  min-height: clamp(68px, 7.6vw, 116px);
   padding-block: 10px;
 }
 
@@ -215,10 +272,10 @@ h1 {
 .task-label {
   position: relative;
   display: grid;
-  grid-template-columns: var(--control-size) minmax(0, 1fr);
+  grid-template-columns: var(--check-target) minmax(0, 1fr);
   align-items: center;
   gap: clamp(11px, 2.15vw, 33px);
-  min-height: var(--control-size);
+  min-height: var(--check-target);
   cursor: pointer;
   touch-action: manipulation;
 }
@@ -227,23 +284,30 @@ h1 {
   display: grid;
   place-items: center;
   justify-self: center;
-  width: var(--icon-size);
-  height: var(--icon-size);
+  width: var(--check-size);
+  height: var(--check-size);
   border: clamp(2px, 0.17vw, 2.6px) solid var(--ink);
   border-radius: clamp(4px, 0.4vw, 6px);
   color: var(--paper);
-  transition: background-color 170ms ease-out, border-color 170ms ease-out;
+  transition: background-color 240ms var(--ease-out), border-color 240ms var(--ease-out);
 }
 
-.task-check::after {
-  content: "";
-  width: 31%;
-  height: 58%;
-  border: solid currentColor;
-  border-width: 0 clamp(2px, 0.3vw, 4px) clamp(2px, 0.3vw, 4px) 0;
+.task-check svg {
+  width: 80%;
+  height: 80%;
+}
+
+.task-check path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
   opacity: 0;
-  transform: translateY(-8%) rotate(45deg) scale(0.65);
-  transition: opacity 170ms ease-out, transform 200ms var(--ease-out);
+  transition: stroke-dashoffset 290ms var(--ease-out), opacity 160ms ease-out;
+}
+
+.task-copy {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
 }
 
 .task-title {
@@ -253,7 +317,16 @@ h1 {
   font-weight: 700;
   letter-spacing: -0.036em;
   overflow-wrap: anywhere;
-  transition: color 170ms ease-out;
+  text-decoration: line-through transparent;
+  text-decoration-thickness: 0.08em;
+  transition: color 240ms ease-out, text-decoration-color 240ms ease-out;
+}
+
+.task-deadline {
+  color: var(--olive);
+  font-size: clamp(13px, 1.05vw, 16px);
+  line-height: 1.25;
+  font-weight: 700;
 }
 
 .task-checkbox:checked + .task-check {
@@ -261,36 +334,39 @@ h1 {
   background: var(--olive);
 }
 
-.task-checkbox:checked + .task-check::after {
+.task-checkbox:checked + .task-check path {
+  stroke-dashoffset: 0;
   opacity: 1;
-  transform: translateY(-8%) rotate(45deg) scale(1);
 }
 
-.task-checkbox:checked ~ .task-title {
+.task-checkbox:checked ~ .task-copy .task-title {
   color: var(--muted);
-  text-decoration: line-through;
-  text-decoration-thickness: 0.08em;
+  text-decoration-color: currentColor;
 }
 
-.delete-button {
+.task-actions {
+  display: flex;
+  gap: clamp(0px, 0.55vw, 8px);
+}
+
+.icon-button {
   display: grid;
   place-items: center;
-  width: var(--control-size);
-  height: var(--control-size);
+  width: 44px;
+  height: 44px;
   padding: 0;
   border: 0;
   background: transparent;
   color: var(--ink);
-  transition: color 160ms ease-out, transform 160ms var(--ease-out);
+  transition: background-color 180ms ease-out, color 180ms ease-out,
+    transform 180ms var(--ease-out);
 }
 
-.delete-button svg {
-  width: var(--icon-size);
-  height: var(--icon-size);
+.icon-button svg {
   pointer-events: none;
 }
 
-.delete-button:active {
+.icon-button:active {
   transform: scale(0.92);
 }
 
@@ -314,7 +390,7 @@ h1 {
   margin: 0;
   aspect-ratio: 10 / 13;
   background: #e5dbcb;
-  animation: reveal 680ms var(--ease-out) both;
+  animation: photo-reveal 700ms var(--ease-out) both;
 }
 
 .workspace-photo img {
@@ -322,15 +398,137 @@ h1 {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  animation: photo-settle 940ms var(--ease-out) both;
 }
 
-.task-row--entering {
-  animation: reveal 280ms var(--ease-out) both;
+.task-row--entering .task-row-body {
+  animation: row-reveal 360ms var(--ease-out) both;
 }
 
 .task-row--leaving {
   pointer-events: none;
-  animation: row-exit 170ms ease-in both;
+}
+
+.task-row--leaving .task-row-body {
+  animation: row-exit 190ms cubic-bezier(0.4, 0, 1, 1) both;
+}
+
+.undo-notice {
+  position: fixed;
+  z-index: 2;
+  inset-inline-start: clamp(12px, 3.45vw, 56px);
+  inset-block-end: max(14px, env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  gap: clamp(6px, 1.2vw, 14px);
+  width: max-content;
+  max-width: calc(100% - 24px);
+  padding: 5px 5px 5px 15px;
+  border: 1px solid var(--line);
+  border-inline-start: 3px solid var(--olive);
+  background: #fffcf7;
+  box-shadow: 0 8px 30px rgb(37 27 18 / 0.13);
+  font-size: clamp(14px, 1.12vw, 17px);
+  font-weight: 700;
+  animation: toast-reveal 340ms var(--ease-out) both;
+}
+
+.undo-notice .icon-button {
+  flex: 0 0 44px;
+  color: var(--muted);
+}
+
+.task-editor {
+  width: min(520px, calc(100% - 32px));
+  max-height: calc(100dvh - 32px);
+  padding: clamp(24px, 3.3vw, 42px);
+  border: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: 0 18px 65px rgb(32 23 16 / 0.2);
+  opacity: 0;
+  transform: translateY(16px) scale(0.98);
+  transition: opacity 230ms ease-out, transform 320ms var(--ease-out),
+    display 320ms allow-discrete, overlay 320ms allow-discrete;
+}
+
+.task-editor[open] {
+  opacity: 1;
+  transform: none;
+}
+
+.task-editor::backdrop {
+  background: rgb(26 26 26 / 0.30);
+  backdrop-filter: blur(3px);
+  opacity: 0;
+  transition: opacity 250ms ease-out, display 320ms allow-discrete, overlay 320ms allow-discrete;
+}
+
+.task-editor[open]::backdrop {
+  opacity: 1;
+}
+
+@starting-style {
+  .task-editor[open] {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+
+  .task-editor[open]::backdrop {
+    opacity: 0;
+  }
+}
+
+.task-editor h2 {
+  margin: 0 0 24px;
+  font-size: clamp(26px, 3.5vw, 36px);
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.05em;
+}
+
+.editor-label {
+  display: block;
+  margin-bottom: 4px;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.editor-title {
+  width: 100%;
+  min-height: 46px;
+  padding: 4px 3px;
+  border: 0;
+  border-bottom: 1px solid var(--field-line);
+  border-radius: 0;
+  background: transparent;
+  color: var(--ink);
+  font-size: 20px;
+}
+
+.editor-date-entry {
+  margin-top: 14px;
+}
+
+.editor-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px 12px;
+  margin-top: 28px;
+}
+
+.editor-actions button {
+  min-height: 46px;
+  padding: 0 17px;
+  border: 0;
+  font-weight: 800;
+}
+
+.editor-cancel {
+  background: transparent;
+  color: var(--ink);
 }
 
 @keyframes reveal {
@@ -343,12 +541,44 @@ h1 {
 @keyframes row-exit {
   to {
     opacity: 0;
-    transform: translateX(-8px);
+    transform: translateX(-10px) scale(0.985);
+  }
+}
+
+@keyframes row-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(13px) scale(0.99);
+  }
+}
+
+@keyframes photo-reveal {
+  from {
+    opacity: 0;
+    clip-path: inset(4% 0 6%);
+  }
+
+  to {
+    clip-path: inset(0);
+  }
+}
+
+@keyframes photo-settle {
+  from {
+    transform: scale(1.055);
+  }
+}
+
+@keyframes toast-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.97);
   }
 }
 
 @media (hover: hover) {
-  .add-button:hover {
+  .add-button:hover,
+  .editor-save:hover {
     background: #35332d;
   }
 
@@ -356,8 +586,21 @@ h1 {
     border-color: var(--olive);
   }
 
+  .icon-button:hover,
+  .editor-cancel:hover {
+    background: rgb(26 26 26 / 0.055);
+  }
+
+  .edit-button:hover {
+    color: var(--olive);
+  }
+
   .delete-button:hover {
     color: var(--danger);
+  }
+
+  .text-button:hover {
+    text-decoration-color: currentColor;
   }
 }
 
@@ -379,10 +622,22 @@ h1 {
 
   .task-form {
     margin-top: 32px;
+  }
+
+  .task-compose-line {
     font-size: clamp(17px, 4.6vw, 25px);
   }
 
-  .task-row {
+  .task-date-entry,
+  .task-view-controls {
+    column-gap: 8px;
+  }
+
+  .date-input {
+    font-size: 16px;
+  }
+
+  .task-row-body {
     min-height: 62px;
     padding-block: 8px;
   }
@@ -399,14 +654,23 @@ h1 {
   .workspace-photo img {
     object-position: 50% 68%;
   }
+
+  .task-editor {
+    inset: auto 0 0;
+    width: 100%;
+    max-width: 100%;
+    max-height: 90dvh;
+    margin: 0;
+    padding-bottom: max(24px, env(safe-area-inset-bottom));
+  }
 }
 
 @media (forced-colors: active) {
   .task-checkbox {
     position: static;
     justify-self: center;
-    width: var(--icon-size);
-    height: var(--icon-size);
+    width: var(--check-size);
+    height: var(--check-size);
     margin: 0;
     clip-path: none;
   }
@@ -425,7 +689,8 @@ h1 {
   }
 
   .add-button:active,
-  .delete-button:active {
+  .editor-save:active,
+  .icon-button:active {
     transform: none;
   }
 }
