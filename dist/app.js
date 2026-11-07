@@ -9,8 +9,8 @@ const draftDeadline = document.querySelector("#draft-deadline");
 const draftDeadlineDate = document.querySelector("#draft-deadline-date");
 const list = document.querySelector("#task-list");
 const template = document.querySelector("#task-template");
-const sort = document.querySelector("#task-sort");
-const filter = document.querySelector("#task-filter");
+const sortGroup = document.querySelector("#task-sort");
+const filterGroup = document.querySelector("#task-filter");
 const count = document.querySelector("#task-count");
 const emptyState = document.querySelector("#empty-state");
 const warning = document.querySelector("#storage-warning");
@@ -37,6 +37,8 @@ const emptyMessages = {
 };
 let editingTask;
 let lastDeleted;
+let selectedSort = sortGroup.querySelector("input[checked]");
+let selectedFilter = filterGroup.querySelector("input[checked]");
 
 function showWarning(message) {
   warning.textContent = message;
@@ -98,7 +100,7 @@ function saveTasks() {
 
 function updateEmptyState() {
   emptyState.hidden = list.childElementCount > 0;
-  emptyState.textContent = emptyMessages[filter.value];
+  emptyState.textContent = emptyMessages[selectedFilter.value];
 }
 
 function updateCount() {
@@ -107,7 +109,7 @@ function updateCount() {
 }
 
 function matchesFilter(task) {
-  return filter.value === "all" || task.completed === (filter.value === "completed");
+  return selectedFilter.value === "all" || task.completed === (selectedFilter.value === "completed");
 }
 
 function compareDeadlines(first, second) {
@@ -204,7 +206,7 @@ function createTaskRow(task) {
     task.completed = checkbox.checked;
     saveTasks();
     updateCount();
-    if (!matchesFilter(task)) removeRow(task, row, ".task-checkbox", filter);
+    if (!matchesFilter(task)) removeRow(task, row, ".task-checkbox", selectedFilter);
   });
   row.querySelector(".edit-button").addEventListener("click", () => openEditor(task));
   row.querySelector(".delete-button").addEventListener("click", () => removeTask(task, row));
@@ -215,8 +217,8 @@ function createTaskRow(task) {
 function renderTasks(enteringTask) {
   const previous = measureRows();
   const visibleTasks = tasks.filter(matchesFilter);
-  if (sort.value === "newest") visibleTasks.reverse();
-  if (sort.value === "deadline") visibleTasks.sort(compareDeadlines);
+  if (selectedSort.value === "newest") visibleTasks.reverse();
+  if (selectedSort.value === "deadline") visibleTasks.sort(compareDeadlines);
 
   const fragment = document.createDocumentFragment();
   for (const task of visibleTasks) {
@@ -288,7 +290,7 @@ function undoDeletion() {
   renderTasks(task);
   updateCount();
   if (undoNotice.contains(document.activeElement)) {
-    const target = matchesFilter(task) ? taskRows.get(task).querySelector(".edit-button") : filter;
+    const target = matchesFilter(task) ? taskRows.get(task).querySelector(".edit-button") : selectedFilter;
     target.focus();
   }
   undoNotice.hidden = true;
@@ -297,14 +299,15 @@ function undoDeletion() {
 
 const tasks = loadTasks();
 syncNewDeadline();
-sort.value = "oldest";
-filter.value = "all";
 try {
   const savedSort = localStorage.getItem(sortKey);
-  if (savedSort === "newest" || savedSort === "deadline") sort.value = savedSort;
+  const savedOption = Array.from(sortGroup.elements).find((option) => option.value === savedSort);
+  if (savedOption) selectedSort = savedOption;
 } catch {
   // Sorting still works for the current page without storage.
 }
+selectedSort.checked = true;
+selectedFilter.checked = true;
 renderTasks();
 updateCount();
 
@@ -372,7 +375,7 @@ editForm.addEventListener("submit", (event) => {
   Object.assign(editingTask, fields);
   updateTaskRow(editingTask, taskRows.get(editingTask));
   saveTasks();
-  if (sort.value === "deadline") renderTasks();
+  if (selectedSort.value === "deadline") renderTasks();
   editor.close();
   status.textContent = "Задача обновлена.";
 });
@@ -396,12 +399,16 @@ document.querySelector("#dismiss-undo").addEventListener("click", () => {
   undoNotice.hidden = true;
 });
 
-sort.addEventListener("change", () => {
+sortGroup.addEventListener("change", (event) => {
+  selectedSort = event.target;
   try {
-    localStorage.setItem(sortKey, sort.value);
+    localStorage.setItem(sortKey, selectedSort.value);
   } catch {
     // The task data and the current view are independent of this preference.
   }
   renderTasks();
 });
-filter.addEventListener("change", () => renderTasks());
+filterGroup.addEventListener("change", (event) => {
+  selectedFilter = event.target;
+  renderTasks();
+});

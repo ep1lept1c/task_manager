@@ -50,22 +50,33 @@
         </form>
 
         <div class="task-toolbar">
-          <p class="task-count" id="task-count"></p>
           <div class="task-view-controls">
-            <label class="sr-only" for="task-filter">Статус задач</label>
-            <select id="task-filter">
-              <option value="all">Все задачи</option>
-              <option value="active">Активные</option>
-              <option value="completed">Выполненные</option>
-            </select>
-
-            <label class="sr-only" for="task-sort">Порядок задач</label>
-            <select id="task-sort">
-              <option value="oldest">Сначала старые</option>
-              <option value="newest">Сначала новые</option>
-              <option value="deadline">По ближайшему сроку</option>
-            </select>
+            <fieldset class="task-view-group" id="task-filter">
+              <legend>Статус</legend>
+              <div class="view-slider">
+                <input class="sr-only" id="filter-all" type="radio" name="task-filter" value="all" checked>
+                <label for="filter-all">Все</label>
+                <input class="sr-only" id="filter-active" type="radio" name="task-filter" value="active">
+                <label for="filter-active">Активные</label>
+                <input class="sr-only" id="filter-completed" type="radio" name="task-filter" value="completed">
+                <label for="filter-completed">Выполнены</label>
+                <span class="view-slider-thumb" aria-hidden="true"></span>
+              </div>
+            </fieldset>
+            <fieldset class="task-view-group" id="task-sort">
+              <legend>Сортировка</legend>
+              <div class="view-slider">
+                <input class="sr-only" id="sort-oldest" type="radio" name="task-sort" value="oldest" checked>
+                <label for="sort-oldest" title="Сначала старые">Старые</label>
+                <input class="sr-only" id="sort-newest" type="radio" name="task-sort" value="newest">
+                <label for="sort-newest" title="Сначала новые">Новые</label>
+                <input class="sr-only" id="sort-deadline" type="radio" name="task-sort" value="deadline">
+                <label for="sort-deadline" title="По ближайшему сроку">По сроку</label>
+                <span class="view-slider-thumb" aria-hidden="true"></span>
+              </div>
+            </fieldset>
           </div>
+          <p class="task-count" id="task-count"></p>
         </div>
 
         <p class="empty-state" id="empty-state">Задач пока нет</p>

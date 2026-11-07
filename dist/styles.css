@@ -31,8 +31,7 @@ body {
 }
 
 button,
-input,
-select {
+input {
   font: inherit;
 }
 
@@ -161,7 +160,6 @@ h1 {
 .editor-cancel:focus-visible,
 .text-button:focus-visible,
 .icon-button:focus-visible,
-.task-view-controls select:focus-visible,
 .task-checkbox:focus-visible + .task-check {
   outline: 2px solid var(--olive);
   outline-offset: 4px;
@@ -270,40 +268,109 @@ h1 {
 }
 
 .task-toolbar {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 4px 20px;
+  display: grid;
+  gap: 12px;
   margin: clamp(18px, 2vw, 32px) 0 0;
-  padding-bottom: 6px;
+  padding-bottom: 12px;
   border-bottom: 1px solid var(--line);
-  font-size: clamp(14px, 1.25vw, 19px);
   line-height: 1.3;
 }
 
 .task-count {
   margin: 0;
   color: var(--muted);
+  font-size: clamp(13px, 2.5cqi, 15px);
   font-variant-numeric: tabular-nums;
 }
 
 .task-view-controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px 14px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px 14px;
 }
 
-.task-view-controls select {
-  max-width: 100%;
-  min-height: 44px;
-  padding: 0 2px;
+.task-view-group {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
   border: 0;
-  border-radius: 0;
-  background: transparent;
-  color: var(--ink);
-  font-weight: 600;
+}
+
+.task-view-group legend {
+  margin-bottom: 5px;
+  padding: 0;
+  color: var(--muted);
+  font-size: clamp(12px, 2.5cqi, 14px);
+  font-weight: 700;
+}
+
+.view-slider {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: #eae5dc;
+}
+
+.view-slider label {
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  min-height: 44px;
+  padding-inline: 4px;
+  border-radius: 6px;
+  color: #625f57;
+  font-size: clamp(12px, 2.65cqi, 14px);
+  font-weight: 700;
+  text-align: center;
   cursor: pointer;
+  touch-action: manipulation;
+  transition: color 180ms ease-out;
+}
+
+.view-slider-thumb {
+  position: absolute;
+  inset-block: 3px;
+  inset-inline-start: 3px;
+  width: calc((100% - 6px) / 3);
+  border: 1px solid rgb(92 107 63 / 0.20);
+  border-radius: 6px;
+  background: #fffdf8;
+  box-shadow: 0 1px 3px rgb(45 32 20 / 0.11);
+  pointer-events: none;
+  transition: transform 300ms var(--ease-out);
+}
+
+.view-slider input:nth-of-type(2):checked ~ .view-slider-thumb {
+  transform: translateX(100%);
+}
+
+.view-slider input:nth-of-type(3):checked ~ .view-slider-thumb {
+  transform: translateX(200%);
+}
+
+.view-slider input:checked + label {
+  color: #465332;
+}
+
+.view-slider input:focus-visible + label {
+  outline: 2px solid var(--olive);
+  outline-offset: -2px;
+}
+
+@container (min-width: 530px) {
+  .task-view-controls {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (hover: hover) {
+  .view-slider input:not(:checked) + label:hover {
+    color: var(--ink);
+  }
 }
 
 .task-list,
@@ -706,8 +773,7 @@ h1 {
     font-size: clamp(17px, 4.6vw, 25px);
   }
 
-  .editor-date-entry,
-  .task-view-controls {
+  .editor-date-entry {
     column-gap: 8px;
   }
 
@@ -744,6 +810,10 @@ h1 {
 }
 
 @media (forced-colors: active) {
+  .view-slider input:checked + label {
+    border: 1px solid Highlight;
+  }
+
   .task-checkbox {
     position: static;
     justify-self: center;
