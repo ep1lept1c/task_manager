@@ -22,6 +22,24 @@
           <button class="add-button" type="submit">Добавить</button>
         </form>
 
+        <div class="task-toolbar">
+          <p class="task-count" id="task-count"></p>
+          <div class="task-view-controls">
+            <label class="sr-only" for="task-filter">Статус задач</label>
+            <select id="task-filter">
+              <option value="all">Все задачи</option>
+              <option value="active">Активные</option>
+              <option value="completed">Выполненные</option>
+            </select>
+
+            <label class="sr-only" for="task-sort">Порядок по времени добавления</label>
+            <select id="task-sort">
+              <option value="oldest">Сначала старые</option>
+              <option value="newest">Сначала новые</option>
+            </select>
+          </div>
+        </div>
+
         <p class="empty-state" id="empty-state">Задач пока нет</p>
         <ul class="task-list" id="task-list" aria-label="Задачи"></ul>
         <p class="storage-warning" id="storage-warning" role="status" hidden>Не удалось сохранить задачи в этом браузере.</p>

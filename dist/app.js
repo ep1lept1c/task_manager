@@ -1,12 +1,21 @@
 const storageKey = "todo-list:v1";
+const sortKey = "todo-list:sort";
 const form = document.querySelector("#task-form");
 const input = document.querySelector("#task-input");
 const list = document.querySelector("#task-list");
 const template = document.querySelector("#task-template");
+const sort = document.querySelector("#task-sort");
+const filter = document.querySelector("#task-filter");
+const count = document.querySelector("#task-count");
 const emptyState = document.querySelector("#empty-state");
 const warning = document.querySelector("#storage-warning");
 const status = document.querySelector("#task-status");
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+const emptyMessages = {
+  all: "Задач пока нет",
+  active: "Нет активных задач",
+  completed: "Нет выполненных задач",
+};
 
 function showWarning(message) {
   warning.textContent = message;
@@ -52,25 +61,29 @@ function saveTasks() {
 
 function updateEmptyState() {
   emptyState.hidden = list.childElementCount > 0;
+  emptyState.textContent = emptyMessages[filter.value];
 }
 
-function removeTask(task, row) {
-  const index = tasks.indexOf(task);
-  if (index === -1) return;
+function updateCount() {
+  const completed = tasks.filter((task) => task.completed).length;
+  count.textContent = `Выполнено ${completed} из ${tasks.length}`;
+}
 
-  tasks.splice(index, 1);
-  saveTasks();
-  row.classList.remove("task-row--entering");
-  row.classList.add("task-row--leaving");
+function matchesFilter(task) {
+  return filter.value === "all" || task.completed === (filter.value === "completed");
+}
 
+function removeRow(row, controlSelector, fallback) {
   if (row.contains(document.activeElement)) {
-    const remaining = list.querySelectorAll(".task-row:not(.task-row--leaving)");
-    const nextRow = remaining[Math.min(index, remaining.length - 1)];
-    const nextControl = nextRow?.querySelector(".delete-button") ?? input;
+    const visible = Array.from(list.querySelectorAll(".task-row:not(.task-row--leaving)"));
+    const index = visible.indexOf(row);
+    const nextRow = visible[index + 1] ?? visible[index - 1];
+    const nextControl = nextRow?.querySelector(controlSelector) ?? fallback;
     nextControl.focus({ preventScroll: true });
   }
+  row.classList.remove("task-row--entering");
+  row.classList.add("task-row--leaving");
   row.inert = true;
-  status.textContent = "Задача удалена.";
 
   const finish = () => {
     row.remove();
@@ -82,6 +95,17 @@ function removeTask(task, row) {
   } else {
     finish();
   }
+}
+
+function removeTask(task, row) {
+  const index = tasks.indexOf(task);
+  if (index === -1) return;
+
+  tasks.splice(index, 1);
+  saveTasks();
+  updateCount();
+  removeRow(row, ".delete-button", input);
+  status.textContent = "Задача удалена.";
 }
 
 function appendTask(task, animate = false) {
@@ -96,6 +120,8 @@ function appendTask(task, animate = false) {
   checkbox.addEventListener("change", () => {
     task.completed = checkbox.checked;
     saveTasks();
+    updateCount();
+    if (!matchesFilter(task)) removeRow(row, ".task-checkbox", filter);
   });
   deleteButton.addEventListener("click", () => removeTask(task, row));
 
@@ -106,13 +132,38 @@ function appendTask(task, animate = false) {
     });
   }
 
-  list.append(row);
+  if (sort.value === "newest") list.prepend(row);
+  else list.append(row);
+}
+
+function renderTasks() {
+  list.replaceChildren();
+  for (const task of tasks) {
+    if (matchesFilter(task)) appendTask(task);
+  }
   updateEmptyState();
 }
 
 const tasks = loadTasks();
-for (const task of tasks) appendTask(task);
-updateEmptyState();
+sort.value = "oldest";
+filter.value = "all";
+try {
+  if (localStorage.getItem(sortKey) === "newest") sort.value = "newest";
+} catch {
+  // Sorting still works for the current page without storage.
+}
+renderTasks();
+updateCount();
+
+sort.addEventListener("change", () => {
+  try {
+    localStorage.setItem(sortKey, sort.value);
+  } catch {
+    // The task data and the current view are independent of this preference.
+  }
+  renderTasks();
+});
+filter.addEventListener("change", renderTasks);
 
 input.addEventListener("input", () => input.setCustomValidity(""));
 form.addEventListener("submit", (event) => {
@@ -131,9 +182,12 @@ form.addEventListener("submit", (event) => {
 
   tasks.push(task);
   saveTasks();
-  appendTask(task, true);
+  const visible = matchesFilter(task);
+  if (visible) appendTask(task, true);
+  updateEmptyState();
+  updateCount();
   input.value = "";
   input.setCustomValidity("");
   input.focus({ preventScroll: true });
-  status.textContent = "Задача добавлена.";
+  status.textContent = visible ? "Задача добавлена." : "Задача добавлена в активные.";
 });

@@ -31,7 +31,8 @@ body {
 }
 
 button,
-input {
+input,
+select {
   font: inherit;
 }
 
@@ -139,6 +140,7 @@ h1 {
 
 .add-button:focus-visible,
 .delete-button:focus-visible,
+.task-view-controls select:focus-visible,
 .task-checkbox:focus-visible + .task-check {
   outline: 2px solid var(--olive);
   outline-offset: 4px;
@@ -148,9 +150,46 @@ h1 {
   transform: translateY(1px);
 }
 
+.task-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px 20px;
+  margin: clamp(20px, 2.35vw, 36px) 0 0;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--line);
+  font-size: clamp(14px, 1.25vw, 19px);
+  line-height: 1.3;
+}
+
+.task-count {
+  margin: 0;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.task-view-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
+}
+
+.task-view-controls select {
+  max-width: 100%;
+  min-height: 44px;
+  padding: 0 2px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--ink);
+  font-weight: 600;
+  cursor: pointer;
+}
+
 .task-list,
 .empty-state {
-  margin: clamp(20px, 2.35vw, 36px) 0 0;
+  margin: 0;
 }
 
 .task-list {
