@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Личный список задач с сохранением в браузере.">
+    <meta name="theme-color" content="#f5f1ea">
+    <title>Список задач</title>
+    <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml">
+    <link rel="preload" href="./assets/manrope.ttf" as="font" type="font/ttf" crossorigin>
+    <link rel="stylesheet" href="./styles.css">
+    <script src="./app.js" defer></script>
+  </head>
+  <body>
+    <main class="workspace">
+      <section class="tasks" aria-labelledby="page-title">
+        <h1 id="page-title">Список задач</h1>
+
+        <form class="task-form" id="task-form" novalidate>
+          <label class="sr-only" for="task-input">Новая задача</label>
+          <input id="task-input" name="title" type="text" placeholder="Новая задача" required autocomplete="off">
+          <button class="add-button" type="submit">Добавить</button>
+        </form>
+
+        <p class="empty-state" id="empty-state">Задач пока нет</p>
+        <ul class="task-list" id="task-list" aria-label="Задачи"></ul>
+        <p class="storage-warning" id="storage-warning" role="status" hidden>Не удалось сохранить задачи в этом браузере.</p>
+        <div class="sr-only" id="task-status" role="status"></div>
+      </section>
+
+      <figure class="workspace-photo" aria-hidden="true">
+        <img src="./assets/notebook.webp" alt="" width="960" height="1200" fetchpriority="high">
+      </figure>
+    </main>
+
+    <template id="task-template">
+      <li class="task-row">
+        <label class="task-label">
+          <input class="task-checkbox" type="checkbox">
+          <span class="task-check" aria-hidden="true"></span>
+          <span class="task-title"></span>
+        </label>
+        <button class="delete-button" type="button" aria-label="Удалить задачу">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 5.5h18M9 5.5V3.75A1.75 1.75 0 0 1 10.75 2h2.5A1.75 1.75 0 0 1 15 3.75V5.5M5.5 5.5l.9 14.1A1.5 1.5 0 0 0 7.9 21h8.2a1.5 1.5 0 0 0 1.5-1.4l.9-14.1M10 9v8m4-8v8"/>
+          </svg>
+        </button>
+      </li>
+    </template>
+  </body>
+</html>
