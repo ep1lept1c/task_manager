@@ -18,14 +18,34 @@
 
         <form class="task-form" id="task-form" novalidate>
           <div class="task-compose-line">
-            <label class="sr-only" for="task-input">Новая задача</label>
-            <input id="task-input" name="title" type="text" placeholder="Новая задача" required autocomplete="off">
+            <div class="task-compose-field">
+              <label class="sr-only" for="task-input">Новая задача</label>
+              <input id="task-input" name="title" type="text" placeholder="Новая задача" required autocomplete="off">
+              <button class="icon-button deadline-toggle" id="toggle-task-deadline" type="button" aria-label="Указать срок" aria-expanded="false" aria-controls="task-deadline-controls" title="Указать срок">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="3.5" y="5.5" width="17" height="15" rx="2"/>
+                  <path d="M7.5 3.5v4m9-4v4m-13 3h17"/>
+                  <path class="deadline-plus" d="M12 12.7v5.6m-2.8-2.8h5.6"/>
+                  <path class="deadline-tick" d="m9.3 15.4 1.9 1.9 3.5-3.6"/>
+                </svg>
+              </button>
+              <div class="deadline-panel" id="task-deadline-controls" hidden>
+                <label for="task-deadline">Срок задачи</label>
+                <div class="deadline-panel-controls">
+                  <input class="date-input" id="task-deadline" name="deadline" type="date" max="9999-12-31">
+                  <button class="text-button" id="finish-task-deadline" type="button">Готово</button>
+                </div>
+              </div>
+            </div>
             <button class="add-button" type="submit">Добавить</button>
           </div>
-          <div class="task-date-entry">
-            <label for="task-deadline">Срок <span>(необязательно)</span></label>
-            <input class="date-input" id="task-deadline" name="deadline" type="date" max="9999-12-31">
-            <button class="text-button" id="clear-task-deadline" type="button" hidden>Убрать срок</button>
+          <div class="draft-deadline" id="draft-deadline" hidden>
+            <time id="draft-deadline-date"></time>
+            <button class="icon-button" id="clear-task-deadline" type="button" aria-label="Убрать срок новой задачи" title="Убрать срок">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true">
+                <path d="m6 6 12 12M18 6 6 18"/>
+              </svg>
+            </button>
           </div>
         </form>
 
@@ -74,8 +94,8 @@
         <h2 id="edit-heading">Редактировать задачу</h2>
         <label class="editor-label" for="edit-title">Название</label>
         <input class="editor-title" id="edit-title" name="title" type="text" required autocomplete="off" autofocus>
-        <div class="task-date-entry editor-date-entry">
-          <label for="edit-deadline">Срок <span>(необязательно)</span></label>
+        <div class="editor-date-entry">
+          <label for="edit-deadline">Срок</label>
           <input class="date-input" id="edit-deadline" name="deadline" type="date" max="9999-12-31">
           <button class="text-button" id="clear-edit-deadline" type="button" hidden>Убрать срок</button>
         </div>

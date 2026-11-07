@@ -102,27 +102,33 @@ h1 {
   line-height: 1.2;
 }
 
+.task-compose-field {
+  position: relative;
+  display: flex;
+  flex: 1 1 0;
+  min-width: 0;
+  border-bottom: 2px solid var(--field-line);
+  transition: border-color 180ms var(--ease-out);
+}
+
+.task-compose-field:focus-within {
+  border-bottom-color: var(--ink);
+}
+
 #task-input {
   flex: 1 1 0;
   min-width: 0;
   padding: 0 0.075em;
   border: 0;
-  border-bottom: 2px solid var(--field-line);
   border-radius: 0;
   background: transparent;
   color: var(--ink);
   font-weight: 500;
-  transition: border-color 160ms ease-out;
 }
 
 #task-input::placeholder {
   color: var(--muted);
   opacity: 1;
-}
-
-#task-input:focus {
-  outline: none;
-  border-bottom-color: var(--ink);
 }
 
 #task-input:focus-visible,
@@ -166,18 +172,77 @@ h1 {
   transform: translateY(1px);
 }
 
-.task-date-entry {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0 12px;
-  font-size: clamp(14px, 1.15vw, 17px);
-  font-weight: 600;
+.task-compose-field .deadline-toggle {
+  flex: 0 0 44px;
+  align-self: center;
+  color: var(--muted);
 }
 
-.task-date-entry label span {
+.task-compose-field .deadline-toggle:is(:hover, [aria-expanded="true"], .has-deadline) {
+  color: var(--olive);
+}
+
+.deadline-toggle :is(.deadline-plus, .deadline-tick) {
+  transition: opacity 180ms ease-out;
+}
+
+.deadline-tick,
+.has-deadline .deadline-plus {
+  opacity: 0;
+}
+
+.has-deadline .deadline-tick {
+  opacity: 1;
+}
+
+.deadline-panel {
+  position: absolute;
+  z-index: 1;
+  inset-block-start: calc(100% + 8px);
+  inset-inline-start: max(0px, calc(100% - 250px));
+  width: min(250px, 100cqi);
+  padding: 12px 14px 9px;
+  border: 1px solid var(--line);
+  background: #fffcf7;
+  box-shadow: 0 10px 32px rgb(37 27 18 / 0.12);
+  font-size: 14px;
+  font-weight: 600;
+  animation: deadline-reveal 240ms var(--ease-out) both;
+}
+
+.deadline-panel label {
+  display: block;
+  margin-bottom: 6px;
   color: var(--muted);
-  font-weight: 400;
+}
+
+.deadline-panel-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.deadline-panel-controls .date-input {
+  min-width: 0;
+  font-size: 16px;
+}
+
+.draft-deadline {
+  display: flex;
+  align-items: center;
+  justify-self: start;
+  padding-inline-start: 12px;
+  border-radius: 3px;
+  background: rgb(92 107 63 / 0.08);
+  color: var(--olive);
+  font-size: 14px;
+  font-weight: 700;
+  animation: deadline-reveal 240ms var(--ease-out) both;
+}
+
+.draft-deadline .icon-button {
+  color: inherit;
 }
 
 .date-input {
@@ -210,7 +275,7 @@ h1 {
   align-items: center;
   justify-content: space-between;
   gap: 4px 20px;
-  margin: clamp(12px, 1.45vw, 22px) 0 0;
+  margin: clamp(18px, 2vw, 32px) 0 0;
   padding-bottom: 6px;
   border-bottom: 1px solid var(--line);
   font-size: clamp(14px, 1.25vw, 19px);
@@ -508,7 +573,13 @@ h1 {
 }
 
 .editor-date-entry {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 12px;
   margin-top: 14px;
+  font-size: clamp(14px, 1.15vw, 17px);
+  font-weight: 600;
 }
 
 .editor-actions {
@@ -576,6 +647,13 @@ h1 {
   }
 }
 
+@keyframes deadline-reveal {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+}
+
 @media (hover: hover) {
   .add-button:hover,
   .editor-save:hover {
@@ -628,7 +706,7 @@ h1 {
     font-size: clamp(17px, 4.6vw, 25px);
   }
 
-  .task-date-entry,
+  .editor-date-entry,
   .task-view-controls {
     column-gap: 8px;
   }

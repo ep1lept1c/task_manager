@@ -3,6 +3,10 @@ const sortKey = "todo-list:sort";
 const form = document.querySelector("#task-form");
 const input = document.querySelector("#task-input");
 const newDeadline = document.querySelector("#task-deadline");
+const deadlineToggle = document.querySelector("#toggle-task-deadline");
+const deadlinePanel = document.querySelector("#task-deadline-controls");
+const draftDeadline = document.querySelector("#draft-deadline");
+const draftDeadlineDate = document.querySelector("#draft-deadline-date");
 const list = document.querySelector("#task-list");
 const template = document.querySelector("#task-template");
 const sort = document.querySelector("#task-sort");
@@ -15,6 +19,7 @@ const editor = document.querySelector("#task-editor");
 const editForm = document.querySelector("#edit-form");
 const editTitle = document.querySelector("#edit-title");
 const editDeadline = document.querySelector("#edit-deadline");
+const clearEditDeadline = document.querySelector("#clear-edit-deadline");
 const undoNotice = document.querySelector("#undo-notice");
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 const taskRows = new WeakMap();
@@ -43,6 +48,10 @@ function isDeadline(value) {
 
   const date = new Date(`${value}T00:00:00Z`);
   return Number.isFinite(date.getTime()) && date.toISOString().startsWith(value);
+}
+
+function formatDeadline(value) {
+  return `До ${dateFormat.format(new Date(`${value}T00:00:00Z`))}`;
 }
 
 function loadTasks() {
@@ -181,7 +190,7 @@ function updateTaskRow(task, row) {
   deadline.hidden = !task.deadline;
   if (task.deadline) {
     deadline.dateTime = task.deadline;
-    deadline.textContent = `До ${dateFormat.format(new Date(`${task.deadline}T00:00:00Z`))}`;
+    deadline.textContent = formatDeadline(task.deadline);
   }
 }
 
@@ -225,15 +234,32 @@ function renderTasks(enteringTask) {
   animateRowPositions(previous);
 }
 
-function bindDateInput(field, clearButton) {
-  const sync = () => { clearButton.hidden = !field.value; };
-  field.addEventListener("input", sync);
-  clearButton.addEventListener("click", () => {
-    field.value = "";
-    field.focus({ preventScroll: true });
-    sync();
-  });
-  return sync;
+function syncNewDeadline() {
+  if (!newDeadline.validity.valid) return;
+
+  const date = newDeadline.value;
+  const label = date ? "Изменить срок" : "Указать срок";
+  draftDeadline.hidden = !date;
+  draftDeadlineDate.dateTime = date;
+  draftDeadlineDate.textContent = date ? formatDeadline(date) : "";
+  deadlineToggle.classList.toggle("has-deadline", Boolean(date));
+  deadlineToggle.setAttribute("aria-label", label);
+  deadlineToggle.title = label;
+}
+
+function closeDeadlinePanel(restoreFocus = false) {
+  if (!newDeadline.validity.valid) newDeadline.value = draftDeadlineDate.dateTime;
+  deadlinePanel.hidden = true;
+  deadlineToggle.setAttribute("aria-expanded", "false");
+  if (restoreFocus) deadlineToggle.focus({ preventScroll: true });
+}
+
+function finishDeadlineSelection() {
+  if (newDeadline.reportValidity()) closeDeadlinePanel(true);
+}
+
+function syncEditDeadline() {
+  clearEditDeadline.hidden = !editDeadline.value;
 }
 
 function readTaskFields(titleInput, dateInput) {
@@ -270,8 +296,6 @@ function undoDeletion() {
 }
 
 const tasks = loadTasks();
-const syncNewDeadline = bindDateInput(newDeadline, document.querySelector("#clear-task-deadline"));
-const syncEditDeadline = bindDateInput(editDeadline, document.querySelector("#clear-edit-deadline"));
 syncNewDeadline();
 sort.value = "oldest";
 filter.value = "all";
@@ -296,8 +320,48 @@ form.addEventListener("submit", (event) => {
   updateCount();
   form.reset();
   syncNewDeadline();
+  closeDeadlinePanel();
   input.focus({ preventScroll: true });
   status.textContent = matchesFilter(task) ? "Задача добавлена." : "Задача добавлена в активные.";
+});
+
+deadlineToggle.addEventListener("click", (event) => {
+  if (!deadlinePanel.hidden) {
+    closeDeadlinePanel(true);
+    return;
+  }
+
+  deadlinePanel.hidden = false;
+  deadlineToggle.setAttribute("aria-expanded", "true");
+  newDeadline.focus({ preventScroll: true });
+  if (event.detail > 0) {
+    try {
+      newDeadline.showPicker?.();
+    } catch {
+      // The visible date input also works in browsers that restrict showPicker.
+    }
+  }
+});
+newDeadline.addEventListener("input", syncNewDeadline);
+document.querySelector("#finish-task-deadline").addEventListener("click", finishDeadlineSelection);
+deadlinePanel.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") {
+    event.preventDefault();
+    closeDeadlinePanel(true);
+  } else if (event.key === "Enter" && event.target === newDeadline) {
+    event.preventDefault();
+    finishDeadlineSelection();
+  }
+});
+document.addEventListener("pointerdown", (event) => {
+  if (!deadlinePanel.hidden && !event.target.closest(".deadline-panel, .deadline-toggle, .add-button")) {
+    closeDeadlinePanel();
+  }
+});
+document.querySelector("#clear-task-deadline").addEventListener("click", () => {
+  newDeadline.value = "";
+  closeDeadlinePanel(true);
+  syncNewDeadline();
 });
 
 editForm.addEventListener("submit", (event) => {
@@ -315,6 +379,12 @@ editForm.addEventListener("submit", (event) => {
 
 document.querySelector("#cancel-edit").addEventListener("click", () => editor.close());
 editor.addEventListener("close", () => { editingTask = undefined; });
+editDeadline.addEventListener("input", syncEditDeadline);
+clearEditDeadline.addEventListener("click", () => {
+  editDeadline.value = "";
+  editDeadline.focus({ preventScroll: true });
+  syncEditDeadline();
+});
 for (const field of [input, editTitle]) {
   field.addEventListener("input", () => field.setCustomValidity(""));
 }
