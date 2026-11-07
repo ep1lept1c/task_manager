@@ -50,33 +50,45 @@
         </form>
 
         <div class="task-toolbar">
-          <div class="task-view-controls">
-            <fieldset class="task-view-group" id="task-filter">
-              <legend>Статус</legend>
-              <div class="view-slider">
-                <input class="sr-only" id="filter-all" type="radio" name="task-filter" value="all" checked>
-                <label for="filter-all">Все</label>
-                <input class="sr-only" id="filter-active" type="radio" name="task-filter" value="active">
-                <label for="filter-active">Активные</label>
-                <input class="sr-only" id="filter-completed" type="radio" name="task-filter" value="completed">
-                <label for="filter-completed">Выполнены</label>
-                <span class="view-slider-thumb" aria-hidden="true"></span>
-              </div>
-            </fieldset>
-            <fieldset class="task-view-group" id="task-sort">
-              <legend>Сортировка</legend>
-              <div class="view-slider">
-                <input class="sr-only" id="sort-oldest" type="radio" name="task-sort" value="oldest" checked>
-                <label for="sort-oldest" title="Сначала старые">Старые</label>
-                <input class="sr-only" id="sort-newest" type="radio" name="task-sort" value="newest">
-                <label for="sort-newest" title="Сначала новые">Новые</label>
-                <input class="sr-only" id="sort-deadline" type="radio" name="task-sort" value="deadline">
-                <label for="sort-deadline" title="По ближайшему сроку">По сроку</label>
-                <span class="view-slider-thumb" aria-hidden="true"></span>
-              </div>
-            </fieldset>
+          <div class="task-toolbar-header">
+            <p class="task-count" id="task-count"></p>
+            <button class="task-view-toggle" id="task-view-toggle" type="button" aria-expanded="false" aria-controls="task-view-panel">
+              Вид списка
+              <svg viewBox="0 0 16 16" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="m4 6 4 4 4-4"/>
+              </svg>
+            </button>
           </div>
-          <p class="task-count" id="task-count"></p>
+          <div class="task-view-panel" id="task-view-panel" inert>
+            <div class="task-view-panel-inner">
+              <div class="task-view-controls">
+                <fieldset class="task-view-group" id="task-filter">
+                  <legend>Статус</legend>
+                  <div class="view-slider">
+                    <input class="sr-only" id="filter-all" type="radio" name="task-filter" value="all" checked>
+                    <label for="filter-all">Все</label>
+                    <input class="sr-only" id="filter-active" type="radio" name="task-filter" value="active">
+                    <label for="filter-active">Активные</label>
+                    <input class="sr-only" id="filter-completed" type="radio" name="task-filter" value="completed">
+                    <label for="filter-completed">Выполнены</label>
+                    <span class="view-slider-thumb" aria-hidden="true"></span>
+                  </div>
+                </fieldset>
+                <fieldset class="task-view-group" id="task-sort">
+                  <legend>Сортировка</legend>
+                  <div class="view-slider">
+                    <input class="sr-only" id="sort-oldest" type="radio" name="task-sort" value="oldest">
+                    <label for="sort-oldest" title="Сначала старые">Старые</label>
+                    <input class="sr-only" id="sort-newest" type="radio" name="task-sort" value="newest" checked>
+                    <label for="sort-newest" title="Сначала новые">Новые</label>
+                    <input class="sr-only" id="sort-deadline" type="radio" name="task-sort" value="deadline">
+                    <label for="sort-deadline" title="По ближайшему сроку">По сроку</label>
+                    <span class="view-slider-thumb" aria-hidden="true"></span>
+                  </div>
+                </fieldset>
+              </div>
+            </div>
+          </div>
         </div>
 
         <p class="empty-state" id="empty-state">Задач пока нет</p>
@@ -98,6 +110,7 @@
           <path d="m6 6 12 12M18 6 6 18"/>
         </svg>
       </button>
+      <span class="undo-progress" aria-hidden="true"></span>
     </div>
 
     <dialog class="task-editor" id="task-editor" aria-labelledby="edit-heading">

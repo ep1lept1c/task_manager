@@ -11,6 +11,8 @@ const list = document.querySelector("#task-list");
 const template = document.querySelector("#task-template");
 const sortGroup = document.querySelector("#task-sort");
 const filterGroup = document.querySelector("#task-filter");
+const viewToggle = document.querySelector("#task-view-toggle");
+const viewPanel = document.querySelector("#task-view-panel");
 const count = document.querySelector("#task-count");
 const emptyState = document.querySelector("#empty-state");
 const warning = document.querySelector("#storage-warning");
@@ -112,6 +114,16 @@ function matchesFilter(task) {
   return selectedFilter.value === "all" || task.completed === (selectedFilter.value === "completed");
 }
 
+function filterFocusTarget() {
+  return viewPanel.inert ? viewToggle : selectedFilter;
+}
+
+function setViewPanelOpen(open) {
+  if (!open && viewPanel.contains(document.activeElement)) viewToggle.focus();
+  viewPanel.inert = !open;
+  viewToggle.setAttribute("aria-expanded", String(open));
+}
+
 function compareDeadlines(first, second) {
   if (!first.deadline) return second.deadline ? 1 : 0;
   if (!second.deadline) return -1;
@@ -179,6 +191,12 @@ function removeTask(task, row) {
   updateCount();
   removeRow(task, row, ".delete-button", input);
   lastDeleted = { task, index };
+  if (!undoNotice.hidden) {
+    const progress = undoNotice.querySelector(".undo-progress");
+    progress.replaceWith(progress.cloneNode());
+  }
+  undoNotice.classList.remove("undo-notice--expired");
+  undoNotice.inert = false;
   undoNotice.hidden = false;
   status.textContent = "Задача удалена. Можно отменить удаление.";
 }
@@ -206,7 +224,7 @@ function createTaskRow(task) {
     task.completed = checkbox.checked;
     saveTasks();
     updateCount();
-    if (!matchesFilter(task)) removeRow(task, row, ".task-checkbox", selectedFilter);
+    if (!matchesFilter(task)) removeRow(task, row, ".task-checkbox", filterFocusTarget());
   });
   row.querySelector(".edit-button").addEventListener("click", () => openEditor(task));
   row.querySelector(".delete-button").addEventListener("click", () => removeTask(task, row));
@@ -290,7 +308,7 @@ function undoDeletion() {
   renderTasks(task);
   updateCount();
   if (undoNotice.contains(document.activeElement)) {
-    const target = matchesFilter(task) ? taskRows.get(task).querySelector(".edit-button") : selectedFilter;
+    const target = matchesFilter(task) ? taskRows.get(task).querySelector(".edit-button") : filterFocusTarget();
     target.focus();
   }
   undoNotice.hidden = true;
@@ -397,6 +415,21 @@ document.querySelector("#dismiss-undo").addEventListener("click", () => {
   lastDeleted = undefined;
   input.focus({ preventScroll: true });
   undoNotice.hidden = true;
+});
+
+undoNotice.addEventListener("animationend", (event) => {
+  if (event.target.matches(".undo-progress") && lastDeleted) {
+    lastDeleted = undefined;
+    undoNotice.inert = true;
+    undoNotice.classList.add("undo-notice--expired");
+  } else if (event.target === undoNotice && event.animationName === "toast-exit") {
+    if (!lastDeleted) undoNotice.hidden = true;
+  }
+});
+
+viewToggle.addEventListener("click", () => setViewPanelOpen(viewPanel.inert));
+viewPanel.addEventListener("keydown", (event) => {
+  if (event.key === "Escape") setViewPanelOpen(false);
 });
 
 sortGroup.addEventListener("change", (event) => {
